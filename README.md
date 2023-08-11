@@ -1,10 +1,18 @@
 # Rust USBTMC
 
-A simple USBTMC driver to connect to instruments.
+Pure Rust implementation of the USBTMC protocol to connect to instruments.
 
 Thus far, this library implements the basic USBTMC control endpoint commands, writing DEVICE_DEPENDENT messages to the BULK OUT endpoint and reading DEVICE_DEPENDENT messages to the BULK IN endpoint.
 
 ## Usage
+
+To use, add the following line to your project's Cargo.toml dependencies:
+```toml
+rs-usbtmc = "0.1"
+```
+
+
+## Example
 
 The example below demonstrates how to connect to, send commands to and query the device. 
 
@@ -27,7 +35,6 @@ fn main() {
     // query the device and get a bytes
     let response: Vec<u8> = device.query_raw("*IDN?").expect("failed to query device");
 }
-
 ```
 
 ## Project Plans

@@ -2,6 +2,12 @@
 name = "rs-usbtmc"
 version = "0.1.0"
 edition = "2021"
+authors = ["Kristofer Karam"]
+description = "USBTMC driver written in Rust"
+readme = "README.md"
+homepage = "https://github.com/KrisNK/rs-usbtmc"
+repository = "https://github.com/KrisNK/rs-usbtmc"
+license-file = "LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
