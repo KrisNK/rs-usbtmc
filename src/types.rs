@@ -55,6 +55,31 @@ impl BTag {
     }
 }
 
+/// USB device address
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DeviceAddr {
+    /// USB bus number
+    pub bus: u8,
+    /// USB device number
+    pub device: u8,
+}
+
+/// USB device identifiers
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DeviceId {
+    /// USB Id Vendor
+    pub vendor_id: u16,
+    /// USB Id Product
+    pub product_id: u16,
+}
+
+/// USB device info
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct DeviceInfo {
+    pub id: DeviceId,
+    pub address: DeviceAddr,
+}
+
 /// ### Device Mode
 ///
 /// A collection of the configuration, interface and interface number. Also if the interface has a kernel driver attached.

@@ -59,15 +59,26 @@ mod communication {
     pub mod control;
 }
 
+use rusb::DeviceDescriptor;
+pub use types::{DeviceAddr, DeviceId, DeviceInfo};
+
 use communication::control;
 use constants::misc::DEFAULT_TIMEOUT_DURATION;
-use error::Error;
 use types::{BTag, Capabilities, DeviceMode, Handle, Timeout, UsbtmcEndpoints};
 
 use anyhow::Result;
 
 use std::cell::RefCell;
 use std::rc::Rc;
+
+/// Device filter
+pub trait DeviceFilter {
+    fn apply_filter<T: rusb::UsbContext>(
+        &self,
+        device: &rusb::Device<T>,
+        device_desc: &DeviceDescriptor,
+    ) -> bool;
+}
 
 /// ### UsbtmcClient
 ///
@@ -84,25 +95,32 @@ pub struct UsbtmcClient {
 }
 
 impl UsbtmcClient {
+    /// ### TMC devices
+    ///
+    /// Get a list of USB TMC devices
+    ///
+    pub fn devices() -> Result<Vec<DeviceInfo>> {
+        // setup context
+        let mut context = rusb::Context::new()?;
+
+        init::list_devices(&mut context)
+    }
+
     /// ### Connect
     ///
     /// Connect a USB device and initialize it.
     ///
-    /// #### Arguments
-    /// - `vid` -> the vendor ID
-    /// - `pid` -> the product ID
+    /// Use `filter` argument to select instrument device:
+    /// - `()` - first found USBTMC device
+    /// - `(idVendor, idProduct)` or `DeviceId` - device by USB identifiers
+    /// - `(bus, device)` or `DeviceAddr` - device by USB bus and device number
+    /// - `DeviceInfo` - device by both USB identifiers and address
     ///
-    pub fn connect(vid: u16, pid: u16) -> Result<UsbtmcClient> {
-        // OPEN THE DEVICE
-        // ==========
-
+    pub fn connect(filter: impl DeviceFilter) -> Result<UsbtmcClient> {
         // setup context
         let mut context = rusb::Context::new()?;
         // attempt to open the device
-        let (device, mut handle) = match init::open_device(&mut context, vid, pid) {
-            Some(res) => res,
-            None => return Err(Error::DeviceNotFound.into()),
-        };
+        let (device, mut handle) = init::open_device(&mut context, filter)?;
 
         // GET THE DEVICE MODE
         // ==========
