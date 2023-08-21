@@ -1,5 +1,5 @@
 //! ## USBTMC Errors
-//! 
+//!
 //! The errors used throughout the crate.
 //!
 

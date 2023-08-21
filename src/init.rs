@@ -1,7 +1,7 @@
 //! ## Initialization
-//! 
+//!
 //! A set of functions to help initialize a connection to the device.
-//! 
+//!
 
 use crate::types::{DeviceMode, Endpoint, UsbtmcEndpoints};
 use crate::error::Error;
@@ -11,9 +11,9 @@ use anyhow::Result;
 use rusb::{UsbContext, Device, DeviceHandle, Context, TransferType, Direction};
 
 /// ### Open Device
-/// 
+///
 /// Open the device using a libusb context, a vendor id and a product id.
-/// 
+///
 pub fn open_device<T: UsbContext>(
     context: &mut T,
     vid: u16,
@@ -47,9 +47,9 @@ pub fn open_device<T: UsbContext>(
 }
 
 /// ### Get USBTMC Mode
-/// 
+///
 /// Get the device mode (configuration, interface and interface setting) that is compatible with USBTMC.
-/// 
+///
 pub fn get_usbtmc_mode(device: &Device<Context>) -> Result<DeviceMode> {
     // setup the output
     let mut modes: Vec<DeviceMode> = Vec::new();

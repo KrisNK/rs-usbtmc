@@ -1,48 +1,47 @@
 //! ## Types
-//! 
+//!
 //! The different types used across the crate
-//! 
+//!
 
-
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::rc::Rc;
 use std::time::Duration;
 
-use rusb::{DeviceHandle, Context, Direction, TransferType};
+use rusb::{Context, DeviceHandle, Direction, TransferType};
 
 /// ### Handle
-/// 
+///
 /// Alias for a libusb device handle wrapped in an Rc and RefCell.
-/// 
+///
 pub type Handle = Rc<RefCell<DeviceHandle<Context>>>;
 
 /// ### Timeout
-/// 
+///
 /// Alias for a duration wrapped in an Rc and RefCell.
 pub type Timeout = Rc<RefCell<Duration>>;
 
 /// ### bTag
-/// 
+///
 /// The bTag element used to identify a bulk request.
-/// 
+///
 /// Each time this value is called, it is incremented. If it increments past 255, it wraps around to 1.
-/// 
+///
 #[derive(Debug, Clone)]
 pub struct BTag(Rc<RefCell<u8>>);
 
 impl BTag {
     /// ### New
-    /// 
+    ///
     /// Return a fresh bTag set at the value 1.
-    /// 
+    ///
     pub fn new() -> BTag {
         BTag(Rc::new(RefCell::new(1u8)))
     }
 
     /// ### Get
-    /// 
+    ///
     /// Return the bTag value
-    /// 
+    ///
     pub fn get(&self) -> u8 {
         let btag = self.0.borrow().clone();
 
@@ -57,9 +56,9 @@ impl BTag {
 }
 
 /// ### Device Mode
-/// 
+///
 /// A collection of the configuration, interface and interface number. Also if the interface has a kernel driver attached.
-/// 
+///
 #[derive(Debug, Clone, Default)]
 pub struct DeviceMode {
     /// The USB configuration number
@@ -75,7 +74,7 @@ pub struct DeviceMode {
 /// ### Endpoint
 ///
 /// Properties of an endpoint.
-/// 
+///
 #[derive(Clone, Debug)]
 pub struct Endpoint {
     /// Address of the endpoint on the interface
@@ -89,9 +88,9 @@ pub struct Endpoint {
 }
 
 /// ### USBTMC Endpoints
-/// 
+///
 /// Endpoints specific to the USBTMC spec.
-/// 
+///
 #[derive(Clone, Debug)]
 pub struct UsbtmcEndpoints {
     /// The mandatory BULK OUT endpoint
@@ -103,9 +102,9 @@ pub struct UsbtmcEndpoints {
 }
 
 /// ### Capabilities
-/// 
+///
 /// The collected capabilities of a USBTMC device.
-/// 
+///
 #[derive(Clone, Debug)]
 pub struct Capabilities {
     pub bcd_version: u16,

@@ -110,7 +110,8 @@ pub fn read(
     let mut end_of_message = false;
     let mut output_data: Vec<u8> = Vec::new();
 
-    let mut buffer: Vec<u8> = vec![0x00; bulk_in_endpoint.max_packet_size as usize + misc::USBTMC_HEADER_SIZE];
+    let mut buffer: Vec<u8> =
+        vec![0x00; bulk_in_endpoint.max_packet_size as usize + misc::USBTMC_HEADER_SIZE];
 
     // READING LOOP
     // ==========
