@@ -14,7 +14,7 @@ rs-usbtmc = "0.1"
 
 ## Example
 
-The example below demonstrates how to connect to, send commands to and query the device. 
+The example below demonstrates how to connect to, send commands to and query the device.
 
 ```rust
 use rs_usbtmc::UsbtmcClient;
@@ -24,7 +24,7 @@ const DEVICE_PID: u16 = 0x0000;
 
 fn main() {
     // connect to the device
-    let device = UsbtmcClient::connect(DEVICE_VID, DEVICE_PID).expect("failed to connect");
+    let device = UsbtmcClient::connect((DEVICE_VID, DEVICE_PID)).expect("failed to connect");
 
     // send a command to the device
     device.command("*IDN?").expect("failed to send command");

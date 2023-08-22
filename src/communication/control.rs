@@ -337,13 +337,13 @@ pub fn clear_buffers(handle: &Handle, interface_number: u8, timeout: &Timeout) -
 }
 
 /// ### Clear Feature
-/// 
+///
 /// Clear any halt on the specified endpoint.
-/// 
+///
 /// #### Arguments
 /// - `handle` -> the device handle to the USB device
 /// - `endpoint` - the endpoint to clear
-/// 
+///
 pub fn clear_feature(handle: &Handle, endpoint: &Endpoint) -> Result<()> {
     handle.borrow().clear_halt(endpoint.address)?;
     Ok(())
