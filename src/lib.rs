@@ -262,6 +262,13 @@ impl UsbtmcClient {
             &self.timeout,
         )?;
 
+        // filter out invalid bytes (not ASCII bytes and null bytes)
+        let resp: Vec<u8> = resp
+            .iter()
+            .filter(|v| v.is_ascii() && **v != 0x00)
+            .map(|v| *v)
+            .collect();
+
         // Convert response to string
         let resp = std::str::from_utf8(&resp)?.trim();
 

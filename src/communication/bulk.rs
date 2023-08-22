@@ -131,13 +131,15 @@ pub fn read(
             timeout.borrow().clone(),
         )?;
 
-        // get the data
-        let mut data: Vec<u8> = buffer[misc::USBTMC_HEADER_SIZE..bytes_read]
-            .iter()
-            .filter(|v| **v != 0x00)
-            .map(|v| *v)
-            .collect();
-        output_data.append(&mut data);
+        // // get the data
+        // let mut data: Vec<u8> = buffer[misc::USBTMC_HEADER_SIZE..bytes_read]
+        //     .iter()
+        //     .filter(|v| **v != 0x00)
+        //     .map(|v| *v)
+        //     .collect();
+        
+        // Add data to the total output
+        output_data.append(&mut buffer[misc::USBTMC_HEADER_SIZE..bytes_read].to_vec());
 
         // check if its the end of the message
         let read_attributes = buffer[8];
