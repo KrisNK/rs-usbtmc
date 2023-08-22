@@ -345,6 +345,6 @@ pub fn clear_buffers(handle: &Handle, interface_number: u8, timeout: &Timeout) -
 /// - `endpoint` - the endpoint to clear
 /// 
 pub fn clear_feature(handle: &Handle, endpoint: &Endpoint) -> Result<()> {
-    handle.borrow_mut().clear_halt(endpoint.address)?;
+    handle.borrow().clear_halt(endpoint.address)?;
     Ok(())
 }
