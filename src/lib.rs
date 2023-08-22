@@ -68,9 +68,6 @@ use types::{BTag, Capabilities, DeviceMode, Handle, Timeout, UsbtmcEndpoints};
 
 use anyhow::Result;
 
-use std::cell::RefCell;
-use std::rc::Rc;
-
 /// Device filter
 pub trait DeviceFilter {
     fn apply_filter<T: rusb::UsbContext>(
@@ -142,8 +139,8 @@ impl UsbtmcClient {
 
         // SETUP DATA FOR CLIENT
         // ==========
-        let handle: Handle = Rc::new(RefCell::new(handle));
-        let timeout: Timeout = Rc::new(RefCell::new(DEFAULT_TIMEOUT_DURATION));
+        let handle: Handle = Handle::new(handle);
+        let timeout: Timeout = Timeout::new(DEFAULT_TIMEOUT_DURATION);
         let btag = BTag::new();
 
         // GET CAPABILITIES
@@ -177,7 +174,7 @@ impl UsbtmcClient {
     /// - `duration` -> the duration of the timeout
     ///
     pub fn set_timeout(&self, duration: std::time::Duration) {
-        *self.timeout.borrow_mut() = duration;
+        *self.timeout.borrow() = duration;
     }
 
     /// ### Command
@@ -277,13 +274,13 @@ impl Drop for UsbtmcClient {
         // RESET THE CONFIGURATION
         // Release the interface
         self.handle
-            .borrow_mut()
+            .borrow()
             .release_interface(self.mode.interface_number)
             .expect("failed to release device usb interface");
         // Reattach the kernel driver if it was disconnected
         if self.mode.has_kernel_driver {
             self.handle
-                .borrow_mut()
+                .borrow()
                 .attach_kernel_driver(self.mode.interface_number)
                 .expect("failed to attach kernel driver to usb device");
         };

@@ -3,22 +3,44 @@
 //! The different types used across the crate
 //!
 
-use std::cell::RefCell;
-use std::rc::Rc;
 use std::time::Duration;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use rusb::{Context, DeviceHandle, Direction, TransferType};
 
 /// ### Handle
 ///
 /// Alias for a libusb device handle wrapped in an Rc and RefCell.
-///
-pub type Handle = Rc<RefCell<DeviceHandle<Context>>>;
+/// 
+#[derive(Debug, Clone)]
+pub struct Handle(Arc<Mutex<DeviceHandle<Context>>>);
+
+impl Handle {
+    pub fn new(handle: DeviceHandle<Context>) -> Handle {
+        Handle(Arc::new(Mutex::new(handle)))
+    }
+
+    pub fn borrow(&self) -> MutexGuard<'_, DeviceHandle<Context>> {
+        self.0.lock().unwrap()
+    }
+}
 
 /// ### Timeout
 ///
 /// Alias for a duration wrapped in an Rc and RefCell.
-pub type Timeout = Rc<RefCell<Duration>>;
+#[derive(Debug, Clone)]
+pub struct Timeout(Arc<Mutex<Duration>>);
+
+impl Timeout {
+    pub fn new(duration: Duration) -> Timeout {
+        Timeout(Arc::new(Mutex::new(duration)))
+    }
+
+    pub fn borrow(&self) -> MutexGuard<'_, Duration> {
+        self.0.lock().unwrap()
+    }
+}
+
 
 /// ### bTag
 ///
@@ -27,7 +49,8 @@ pub type Timeout = Rc<RefCell<Duration>>;
 /// Each time this value is called, it is incremented. If it increments past 255, it wraps around to 1.
 ///
 #[derive(Debug, Clone)]
-pub struct BTag(Rc<RefCell<u8>>);
+pub struct BTag(Arc<Mutex<u8>>);
+
 
 impl BTag {
     /// ### New
@@ -35,7 +58,7 @@ impl BTag {
     /// Return a fresh bTag set at the value 1.
     ///
     pub fn new() -> BTag {
-        BTag(Rc::new(RefCell::new(1u8)))
+        BTag(Arc::new(Mutex::new(1u8)))
     }
 
     /// ### Get
@@ -43,15 +66,16 @@ impl BTag {
     /// Return the bTag value
     ///
     pub fn get(&self) -> u8 {
-        let btag = self.0.borrow().clone();
+        let mut btag = self.0.lock().unwrap();
+        let output = (*btag).clone();
 
-        if btag == 255 {
-            *self.0.borrow_mut() = 1;
+        if *btag == 255 {
+            *btag = 1;
         } else {
-            *self.0.borrow_mut() += 1;
+            *btag += 1;
         }
 
-        btag
+        output
     }
 }
 

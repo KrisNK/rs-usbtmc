@@ -1,6 +1,6 @@
 [package]
 name = "rs-usbtmc"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Kristofer Karam"]
 description = "USBTMC driver written in Rust"
