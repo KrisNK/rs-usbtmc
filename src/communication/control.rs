@@ -6,7 +6,7 @@
 use crate::constants::control_requests::READ_STATUS_BYTE;
 use crate::constants::{control_requests, usbtmc_status};
 use crate::error::Error;
-use crate::types::{Capabilities, Endpoint, Handle, Timeout, CtlBTag};
+use crate::types::{Capabilities, CtlBTag, Endpoint, Handle, Timeout};
 
 use anyhow::Result;
 use rusb::{Direction, TransferType};
@@ -351,27 +351,70 @@ pub fn clear_feature(handle: &Handle, endpoint: &Endpoint) -> Result<()> {
 }
 
 /// ### Read Status Byte
-/// 
+///
 /// Read the status byte through the control endpoint.
-/// 
+///
 /// #### Arguments
 /// - `handle` -> the device handle to the USB device
-/// 
-pub fn read_status_byte(handle: &Handle, interface_number: u8, ctl_btag: &CtlBTag, timeout: &Timeout) -> Result<u8> {
+///
+pub fn read_status_byte(
+    handle: &Handle,
+    interface_number: u8,
+    ctl_btag: &CtlBTag,
+    interrupt_endpoint: &Option<Endpoint>,
+    timeout: &Timeout,
+) -> Result<u8> {
+    // setup our bTag
+    let btag = ctl_btag.get();
+
     // setup the request
-    let bm_request_type = rusb::request_type(Direction::In, rusb::RequestType::Class, rusb::Recipient::Interface);
+    let bm_request_type = rusb::request_type(
+        Direction::In,
+        rusb::RequestType::Class,
+        rusb::Recipient::Interface,
+    );
     let b_request: u8 = READ_STATUS_BYTE;
-    let w_value: u16 = 0x0000_0000_0000_0000 + (ctl_btag.get() as u16);
+    let w_value: u16 = btag as u16;
     let w_index: u16 = u16::from_le_bytes([interface_number, 0x00]);
-    let mut buffer: [u8;0x0003] = [0x00;0x0003];
+    let mut buffer: [u8; 0x0003] = [0x00; 0x0003];
 
     // send/read the request
-    handle.borrow().read_control(bm_request_type, b_request, w_value, w_index, &mut buffer, *timeout.borrow())?;
+    handle.borrow().read_control(
+        bm_request_type,
+        b_request,
+        w_value,
+        w_index,
+        &mut buffer,
+        *timeout.borrow(),
+    )?;
 
     // check that it is successful
     match buffer[0] {
-        usbtmc_status::STATUS_SUCCESS => Ok(buffer[2]),
-        usbtmc_status::STATUS_FAILED => Err(Error::StatusFailure.into()),
-        _ => Err(Error::StatusUnexpectedFailure.into()),
+        usbtmc_status::STATUS_SUCCESS => {}
+        usbtmc_status::STATUS_FAILED => return Err(Error::StatusFailure.into()),
+        _ => return Err(Error::StatusUnexpectedFailure.into()),
+    };
+
+    // check that btags match
+    if btag != buffer[1] {
+        return Err(Error::StatusMismatchedBTag.into());
+    }
+
+    // check whether the device uses an interrupt endpoint or not
+    match interrupt_endpoint {
+        // If the device uses an interrupt endpoint, the status byte is read from there
+        Some(ep) => {
+            // get the data from the interrupt IN ep
+            let mut buf: Vec<u8> = Vec::new();
+            handle
+                .borrow()
+                .read_interrupt(ep.address, &mut buf, *timeout.borrow())?;
+            // check that the interrupt in ep responds with the correct btag
+            if btag != buf[0] {
+                return Err(Error::StatusMismatchedBTag.into());
+            }
+            Ok(buf[1])
+        }
+        None => Ok(buffer[2]),
     }
 }

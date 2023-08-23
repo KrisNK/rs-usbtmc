@@ -30,4 +30,6 @@ pub enum Error {
     StatusFailure,
     #[error("control request unexpectedly failed")]
     StatusUnexpectedFailure,
+    #[error("mismatched bTag")]
+    StatusMismatchedBTag,
 }

@@ -288,6 +288,7 @@ impl UsbtmcClient {
             &self.handle,
             self.mode.interface_number,
             &self.ctl_btag,
+            &self.endpoints.interrupt_ep,
             &self.timeout,
         )?;
 

@@ -41,6 +41,8 @@ pub mod usbtmc_status {
     pub const STATUS_SPLIT_NOT_IN_PROGRESS: u8 = 0x82;
     /// The device got an INIATE request, but another one is already being processed
     pub const STATUS_SPLIT_IN_PROGRESS: u8 = 0x83;
+    /// The device is unable to queue the response packet on the Interrupt-IN endpoint because the FIFO is full.
+    pub const STATUS_INTERRUPT_IN_BUSY: u8 = 0x20;
 }
 
 #[allow(unused)]

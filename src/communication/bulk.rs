@@ -142,11 +142,15 @@ pub fn read(
     // According to USBTMC spec, null bytes must be added to make
     // the total size divisible by 4. Null bytes are added as padding.
 
-    // count the number of null bytes
-    let num_null_bytes = output_data[output_data.len()-5..]
-        .iter().filter(|v| **v == 0x00).count();
+    // get the position where null byte padding begins
+    let padding_start_pos = output_data[output_data.len()-4..]
+        .iter()
+        .rev()
+        .position(|v| *v != 0x00)
+        .unwrap_or(0);
+    let padding_start_pos = padding_start_pos + (output_data.len() - 4);
     // remove the null bytes from the data
-    output_data.drain(output_data.len()-(num_null_bytes+1)..);
+    output_data.drain(padding_start_pos..);
 
     Ok(output_data)
 }
