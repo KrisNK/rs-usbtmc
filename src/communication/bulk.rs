@@ -131,13 +131,6 @@ pub fn read(
             timeout.borrow().clone(),
         )?;
 
-        // // get the data
-        // let mut data: Vec<u8> = buffer[misc::USBTMC_HEADER_SIZE..bytes_read]
-        //     .iter()
-        //     .filter(|v| **v != 0x00)
-        //     .map(|v| *v)
-        //     .collect();
-
         // Add data to the total output
         output_data.append(&mut buffer[misc::USBTMC_HEADER_SIZE..bytes_read].to_vec());
 
@@ -145,6 +138,15 @@ pub fn read(
         let read_attributes = buffer[8];
         end_of_message = read_attributes & 0b0000_0001 != 0;
     }
+
+    // According to USBTMC spec, null bytes must be added to make
+    // the total size divisible by 4. Null bytes are added as padding.
+
+    // count the number of null bytes
+    let num_null_bytes = output_data[output_data.len()-5..]
+        .iter().filter(|v| **v == 0x00).count();
+    // remove the null bytes from the data
+    output_data.drain(output_data.len()-(num_null_bytes+1)..);
 
     Ok(output_data)
 }
