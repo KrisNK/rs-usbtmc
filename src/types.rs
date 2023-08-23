@@ -3,15 +3,15 @@
 //! The different types used across the crate
 //!
 
-use std::time::Duration;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::time::Duration;
 
 use rusb::{Context, DeviceHandle, Direction, TransferType};
 
 /// ### Handle
 ///
 /// Alias for a libusb device handle wrapped in an Rc and RefCell.
-/// 
+///
 #[derive(Debug, Clone)]
 pub struct Handle(Arc<Mutex<DeviceHandle<Context>>>);
 
@@ -41,7 +41,6 @@ impl Timeout {
     }
 }
 
-
 /// ### bTag
 ///
 /// The bTag element used to identify a bulk request.
@@ -50,7 +49,6 @@ impl Timeout {
 ///
 #[derive(Debug, Clone)]
 pub struct BTag(Arc<Mutex<u8>>);
-
 
 impl BTag {
     /// ### New
@@ -78,6 +76,42 @@ impl BTag {
         output
     }
 }
+
+/// ### Control BTag
+/// 
+/// A 7-bit bTag specifically made for the reading the status byte through
+/// the control endpoint.
+/// 
+#[derive(Debug, Clone)]
+pub struct CtlBTag(Arc<Mutex<u8>>);
+
+impl CtlBTag {
+    /// ### New
+    ///
+    /// Return a fresh bTag set at the value 2.
+    ///
+    pub fn new() -> CtlBTag {
+        CtlBTag(Arc::new(Mutex::new(2u8)))
+    }
+
+    /// ### Get
+    ///
+    /// Return the bTag value
+    ///
+    pub fn get(&self) -> u8 {
+        let mut btag = self.0.lock().unwrap();
+        let output = (*btag).clone();
+
+        if *btag == 127 {
+            *btag = 2;
+        } else {
+            *btag += 1;
+        }
+
+        output
+    }
+}
+
 
 /// USB device address
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

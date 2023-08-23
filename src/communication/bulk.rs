@@ -137,7 +137,7 @@ pub fn read(
         //     .filter(|v| **v != 0x00)
         //     .map(|v| *v)
         //     .collect();
-        
+
         // Add data to the total output
         output_data.append(&mut buffer[misc::USBTMC_HEADER_SIZE..bytes_read].to_vec());
 

@@ -3,9 +3,10 @@
 //! Set of control requests to send to the device.
 //!
 
+use crate::constants::control_requests::READ_STATUS_BYTE;
 use crate::constants::{control_requests, usbtmc_status};
 use crate::error::Error;
-use crate::types::{Capabilities, Endpoint, Handle, Timeout};
+use crate::types::{Capabilities, Endpoint, Handle, Timeout, CtlBTag};
 
 use anyhow::Result;
 use rusb::{Direction, TransferType};
@@ -347,4 +348,30 @@ pub fn clear_buffers(handle: &Handle, interface_number: u8, timeout: &Timeout) -
 pub fn clear_feature(handle: &Handle, endpoint: &Endpoint) -> Result<()> {
     handle.borrow().clear_halt(endpoint.address)?;
     Ok(())
+}
+
+/// ### Read Status Byte
+/// 
+/// Read the status byte through the control endpoint.
+/// 
+/// #### Arguments
+/// - `handle` -> the device handle to the USB device
+/// 
+pub fn read_status_byte(handle: &Handle, interface_number: u8, ctl_btag: &CtlBTag, timeout: &Timeout) -> Result<u8> {
+    // setup the request
+    let bm_request_type = rusb::request_type(Direction::In, rusb::RequestType::Class, rusb::Recipient::Interface);
+    let b_request: u8 = READ_STATUS_BYTE;
+    let w_value: u16 = 0x0000_0000_0000_0000 + (ctl_btag.get() as u16);
+    let w_index: u16 = u16::from_le_bytes([interface_number, 0x00]);
+    let mut buffer: [u8;0x0003] = [0x00;0x0003];
+
+    // send/read the request
+    handle.borrow().read_control(bm_request_type, b_request, w_value, w_index, &mut buffer, *timeout.borrow())?;
+
+    // check that it is successful
+    match buffer[0] {
+        usbtmc_status::STATUS_SUCCESS => Ok(buffer[2]),
+        usbtmc_status::STATUS_FAILED => Err(Error::StatusFailure.into()),
+        _ => Err(Error::StatusUnexpectedFailure.into()),
+    }
 }

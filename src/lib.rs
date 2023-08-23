@@ -64,7 +64,7 @@ pub use types::{DeviceAddr, DeviceId, DeviceInfo};
 
 use communication::control;
 use constants::misc::DEFAULT_TIMEOUT_DURATION;
-use types::{BTag, Capabilities, DeviceMode, Handle, Timeout, UsbtmcEndpoints};
+use types::{BTag, Capabilities, CtlBTag, DeviceMode, Handle, Timeout, UsbtmcEndpoints};
 
 use anyhow::Result;
 
@@ -88,6 +88,7 @@ pub struct UsbtmcClient {
     timeout: Timeout,
     capabilities: Capabilities,
     btag: BTag,
+    ctl_btag: CtlBTag,
     endpoints: UsbtmcEndpoints,
 }
 
@@ -142,6 +143,7 @@ impl UsbtmcClient {
         let handle: Handle = Handle::new(handle);
         let timeout: Timeout = Timeout::new(DEFAULT_TIMEOUT_DURATION);
         let btag = BTag::new();
+        let ctl_btag = CtlBTag::new();
 
         // GET CAPABILITIES
         // ==========
@@ -162,6 +164,7 @@ impl UsbtmcClient {
             timeout,
             capabilities,
             btag,
+            ctl_btag,
             endpoints,
         })
     }
@@ -273,6 +276,22 @@ impl UsbtmcClient {
         let resp = std::str::from_utf8(&resp)?.trim();
 
         Ok(String::from(resp))
+    }
+
+    /// ### Read IEEE 488 Status Byte
+    /// 
+    /// The IEEE 488 status byte is read directly from the control endpoint
+    /// instead of going through the BULK IN endpoint.
+    /// 
+    pub fn read_ieee488_status_byte(&self) -> Result<u8> {
+        let ieee488_byte = control::read_status_byte(
+            &self.handle,
+            self.mode.interface_number,
+            &self.ctl_btag,
+            &self.timeout,
+        )?;
+
+        Ok(ieee488_byte)
     }
 }
 
